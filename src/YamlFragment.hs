@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module YamlFragment where
@@ -6,11 +7,11 @@ module YamlFragment where
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Yaml (FromJSON, Parser, Value (..), parseJSON, (.:))
-import Prettyprinter (Pretty (..), indent, line, nest, vsep, (<+>))
+import Prettyprinter (Pretty (..), hcat, hsep, indent, line, nest, vsep, (<+>))
 import Prettyprinter.Internal.Type (Doc)
 
 data YamlFragment = YamlFragment
-    { fragmentName :: Text
+    { name :: Text
     , fragmentType :: FragmentType
     , code :: [Text]
     }
@@ -36,19 +37,40 @@ instance FromJSON YamlFragment where
             .: "type"
             <*> fmap Text.lines (v .: "code")
 
-prettyPrintClass :: Text -> [Text] -> [Doc ann]
-prettyPrintClass name body =
+prettyClass :: Text -> [Text] -> [Doc ann]
+prettyClass name body =
     ["class" <+> pretty name <+> "{"]
-        ++ map (indent 4 . pretty) body
+        ++ map (indent 2 . pretty) body
         ++ ["}"]
 
-prettyPrintFrag :: [Doc ann] -> Doc ann
-prettyPrintFrag code =
-    vsep $
-        ["frag("]
-            ++ [")"]
+prettyFrag :: [Doc ann] -> Doc ann
+prettyFrag code =
+    hcat
+        [ "frag("
+        , line
+        , indent 2 "\"\"\""
+        , ( case code of
+                [x] -> x
+                x : xs -> x <> line <> vsep (map (indent 4 . ("|" <>)) xs)
+                [] -> ""
+          )
+        , "\"\"\".stripMargin"
+        , line
+        , ")"
+        ]
+
+prettyPieces :: [Doc ann] -> Doc ann
+prettyPieces frags =
+    hsep ["val", "pieces", "=", "List("]
+        <> nest 2 (hcat (zipWith (<>) ("\n" : repeat ",\n") frags))
+        <> line
+        <> ")"
 
 instance Pretty YamlFragment where
     pretty :: YamlFragment -> Doc ann
-    pretty frag = case fragmentType frag of
-        _ -> vsep $ prettyPrintClass (fragmentName frag) (code frag)
+    pretty frag = prettyPieces $
+        (\x -> [x, x]) $
+            prettyFrag $
+                case fragmentType frag of
+                    Shred -> prettyClass (frag.name) (frag.code)
+                    _ -> map pretty $ code frag
