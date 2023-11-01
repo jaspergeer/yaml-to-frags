@@ -1,5 +1,4 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module YamlFragment where
@@ -11,9 +10,9 @@ import Prettyprinter (Pretty (..), hcat, hsep, indent, line, nest, vsep, (<+>))
 import Prettyprinter.Internal.Type (Doc)
 
 data YamlFragment = YamlFragment
-    { name :: Text
+    { fragmentName :: Text
     , fragmentType :: FragmentType
-    , code :: [Text]
+    , fragmentCode :: [Text]
     }
     deriving (Show)
 
@@ -68,9 +67,7 @@ prettyPieces frags =
 
 instance Pretty YamlFragment where
     pretty :: YamlFragment -> Doc ann
-    pretty frag = prettyPieces $
-        (\x -> [x, x]) $
-            prettyFrag $
-                case fragmentType frag of
-                    Shred -> prettyClass (frag.name) (frag.code)
-                    _ -> map pretty $ code frag
+    pretty frag = prettyFrag $
+        case fragmentType frag of
+            Shred -> prettyClass (fragmentName frag) (fragmentCode frag)
+            _ -> map pretty $ fragmentCode frag
