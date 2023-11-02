@@ -9,6 +9,7 @@ import Prettyprinter (Pretty (pretty))
 import System.Environment (getArgs)
 import TestGen (prettyModule, prettyPieces, prettyTest)
 import YamlFragment (YamlFragment)
+import Data.List (sort)
 
 main :: IO ()
 main = do
@@ -17,7 +18,7 @@ main = do
         [] -> putStrLn "yaml-to-frags: Not enough arguments"
         moduleName : fileNames -> do
             decoded <- traverse decodeAllFileThrow fileNames
-            let tests = map (\(n, frags) -> prettyTest n $ prettyPieces $ map pretty (frags :: [YamlFragment])) $ zip convertedTestNames decoded
+            let tests = map (\(n, frags) -> prettyTest n $ prettyPieces $ map pretty $ sort (frags :: [YamlFragment])) $ zip convertedTestNames decoded
             putStr $ show $ prettyModule (Text.pack moduleName) tests
           where
             testNames = map (last . Text.splitOn "/" . head . Text.splitOn ".yaml" . Text.pack) fileNames

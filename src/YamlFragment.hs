@@ -6,7 +6,7 @@ module YamlFragment where
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Yaml (FromJSON, Parser, Value (..), parseJSON, (.:))
-import Prettyprinter (Pretty (..), hcat, indent, vsep)
+import Prettyprinter (Pretty (..), indent, vsep)
 import Prettyprinter.Internal.Type (Doc)
 import TestGen (prettyClass)
 
@@ -14,9 +14,18 @@ data YamlFragment = YamlFragment
     { fragmentName :: Text
     , fragmentType :: FragmentType
     , fragmentCode :: Text
-    }
+    } deriving Eq
 
-data FragmentType = Test | Definition | Shred
+instance Ord YamlFragment where
+  (<=) :: YamlFragment -> YamlFragment -> Bool
+  x <= y = case (fragmentType x, fragmentType y) of
+    (_, Shred) -> True
+    (Shred, _) -> False
+    (_, Definition) -> True
+    (Definition, _) -> False
+    (Test, Test) -> True
+
+data FragmentType = Test | Definition | Shred deriving Eq
 
 instance FromJSON FragmentType where
     parseJSON :: Value -> Parser FragmentType
