@@ -61,7 +61,8 @@ executable yaml-to-frags
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules:    YamlFragment
+    other-modules:    YamlFragment,
+                      TestGen
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -71,7 +72,8 @@ executable yaml-to-frags
                       yaml,
                       prettyprinter,
                       template-haskell,
-                      text
+                      text,
+                      directory
 
     -- Directories containing source files.
     hs-source-dirs:   app,
