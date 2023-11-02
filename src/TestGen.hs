@@ -25,7 +25,7 @@ prettyTest name pieces =
     vsep $
         [ dquotes (pretty name) <+> "in" <+> "{"
         , mempty
-        , nest 2 pieces
+        , indent 2 pieces
         , mempty
         , indent 2 $ hsep ["val", "out", "=", "Mason(pieces.head, pieces.tail, \"test_output\")"]
         , "}"
@@ -37,7 +37,9 @@ prettyModule name tests =
         [ "package" <+> "edu.tufts.cs.javasynth"
         , "package" <+> "synthesis"
         , mempty
+        , "import" <+> "names.nameUtils.*"
         , "import" <+> "source.frag"
+        , mempty
         , "import" <+> "org.scalatest.freespec.AnyFreeSpec"
         , "import" <+> "org.scalatest.matchers.should"
         , mempty
@@ -45,7 +47,6 @@ prettyModule name tests =
             vsep $
                 [ hsep ["given", "CurrentPrefix", "=", "new", "CurrentPrefix:"]
                 , indent 2 $ hsep ["override", "def", "prefix:", "String", "=", "\"Test\""]
-                , mempty
                 ]
                     ++ map (line <>) tests
         ]
